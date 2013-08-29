@@ -79,7 +79,8 @@ class DataReader_i(DataReader_base):
 
         # Append Keyword/Value pairs to SRI
         # This is a commonly used REDHAWK keyword for the real RF center freq of the data 
-        sri.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_long,self.FrontendRF)))
+        sri.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
+        sri.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
 
         # Assign the output port
         self.outputPort = self.port_dataFloatOut
@@ -104,7 +105,8 @@ class DataReader_i(DataReader_base):
     def onconfigure_prop_FrontendRF(self, oldvalue, newvalue):  
         self.FrontendRF = newvalue
         self.outputPort.defaultStreamSRI.keywords=[]
-        self.outputPort.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_long,self.FrontendRF)))
+        self.outputPort.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
+        self.outputPort.defaultStreamSRI.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
         self.outputPort.refreshSRI = True        
 
     def onconfigure_prop_SampleRate(self, oldvalue, newvalue):
