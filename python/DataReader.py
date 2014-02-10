@@ -151,8 +151,8 @@ class DataReader_i(DataReader_base):
         numRead = self.packetSize*self.testDataSize
         byteData = self.inFd.read(numRead) # read in bytes - x testDataSize
         byteDataLen = len(byteData)
-        if byteDataLen!=numRead:
-            self.EOF = True
+        self.EOF = (byteDataLen!=numRead)
+        if self.EOF:
             self.EOS = not self.Loop
 
             # Test whether data read from file is insufficient to create an 
@@ -192,6 +192,8 @@ class DataReader_i(DataReader_base):
                 else:
                     self.inFd = 0
             self.EOF = False
+            if not self.Loop:
+                self.Play = False
         self.t_out = time.time()
         return NORMAL
   
