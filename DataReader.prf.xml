@@ -72,4 +72,10 @@ program.  If not, see http://www.gnu.org/licenses/.
     <kind kindtype="execparam"/>
     <action type="external"/>
   </simple>
+  <simple id="blocking" mode="readwrite" type="boolean">
+    <description>Set the blocking flag in the sri</description>
+    <value>true</value>
+    <kind kindtype="configure"/>
+    <action type="external"/>
+  </simple>
 </properties>

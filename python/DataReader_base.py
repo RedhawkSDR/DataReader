@@ -51,9 +51,11 @@ class ProcessThread(threading.Thread):
         state = NORMAL
         while (state != FINISH) and (not self.stop_signal.isSet()):
             state = self.target()
+            delay = 1e-6
             if (state == NOOP):
                 # If there was no data to process sleep to avoid spinning
-                time.sleep(self.pause)
+                delay = self.pause
+            time.sleep(delay)
 
 class DataReader_base(CF__POA.Resource, Resource):
         # These values can be altered in the __init__ of your derived class
@@ -199,4 +201,12 @@ class DataReader_base(CF__POA.Resource, Resource):
                                kinds=("execparam",),
                                description="""Do we continue to replay and loop over the input file when we are done or not"""
                                )
+        blocking = simple_property(id_="blocking",
+                                   type_="boolean",
+                                   defvalue=True,
+                                   mode="readwrite",
+                                   action="external",
+                                   kinds=("configure",),
+                                   description="""Set the blocking flag in the sri"""
+                                   )
 

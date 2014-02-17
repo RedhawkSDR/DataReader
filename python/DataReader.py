@@ -74,7 +74,7 @@ class DataReader_i(DataReader_base):
                                     yunits=BULKIO.UNITS_NONE,
                                     mode=int(self.complex),    # 0=real,1=complex
                                     streamID=self.StreamID,
-                                    blocking=False,
+                                    blocking=self.blocking,
                                     keywords=[])
 
         # Append Keyword/Value pairs to SRI
@@ -127,6 +127,11 @@ class DataReader_i(DataReader_base):
     def onconfigure_prop_complex(self, oldvalue, newvalue):
         self.complex = newvalue
         self.outputPort.defaultStreamSRI.mode = int(self.complex)
+        self.outputPort.refreshSRI = True
+
+    def onconfigure_prop_blocking(self, oldvalue, newvalue):
+        self.blocking = newvalue
+        self.outputPort.defaultStreamSRI.blocking = bool(newvalue)
         self.outputPort.refreshSRI = True
 
     def makeTimeStamp(self, curr_time):
