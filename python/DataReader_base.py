@@ -142,49 +142,69 @@ class DataReader_base(CF__POA.Resource, Resource):
                                      defvalue=336000.0,
                                      mode="readwrite",
                                      action="external",
-                                     kinds=("configure",)                                 )
+                                     kinds=("configure",),
+                                     description="""Sample rate for output data"""
+                                     )
         StreamID = simple_property(id_="StreamID",
                                    type_="string",
                                    defvalue="dataPlayerStream",
                                    mode="readwrite",
                                    action="external",
-                                   kinds=("configure",)                                 )
+                                   kinds=("configure",),
+                                   description="""bulkio streamID associated with this data"""
+                                   )
         FrontendRF = simple_property(id_="FrontendRF",
                                      type_="long",
                                      defvalue=0,
                                      mode="readwrite",
                                      action="external",
-                                     kinds=("configure",)                                 )
+                                     kinds=("configure",),
+                                     description="""Radio frequency associated with ithis data.  This data is transmitted as a bulkio keyword  """
+                                     )
         InputFile = simple_property(id_="InputFile",
                                     type_="string",
                                     defvalue="/the/path/to/my/file",
                                     mode="readwrite",
                                     action="external",
-                                    kinds=("configure",)                                 )
+                                    kinds=("configure",),
+                                    description="""Path to the binary data to read out"""
+                                    )
         SpeedFactor = simple_property(id_="SpeedFactor",
                                       type_="float",
                                       defvalue=1.0,
                                       mode="readwrite",
                                       action="external",
-                                      kinds=("configure",)                                 )
+                                      kinds=("configure",),
+                                      description="""Ratio of "real time" to play data out the bulkio port.
+                                      1.0:  real time.
+                                      > 1.0:  faster than real time
+                                      < 1.0: slower then real time
+                                      < 0: no sleeping - go as fast as possible  """
+                                      )
         Play = simple_property(id_="Play",
                                type_="boolean",
                                defvalue=False,
                                mode="readwrite",
                                action="external",
-                               kinds=("configure",)                                 )
+                               kinds=("configure",),
+                               description="""If play is false data playback is paused.  When play is set to true we resume playback form the same point in the file"""
+                               )
         ydelta = simple_property(id_="ydelta",
                                  type_="double",
                                  defvalue=0.0,
                                  mode="readwrite",
                                  action="external",
-                                 kinds=("configure",)                                 )
+                                 kinds=("configure",),
+                                 description="""The ydelta associated with the bulkio SRI.  This is only used for framed data (subsize > 0)"""
+                                 )
         subsize = simple_property(id_="subsize",
                                   type_="long",
                                   defvalue=0,
                                   mode="readwrite",
                                   action="external",
-                                  kinds=("configure",)                                 )
+                                  kinds=("configure",),
+                                  description="""The frame size if the data is framed.  This is used for the bulkio SRI."""
+                                  )
         complex = simple_property(id_="complex",
                                   type_="boolean",
                                   defvalue=True,
@@ -199,7 +219,7 @@ class DataReader_base(CF__POA.Resource, Resource):
                                mode="readwrite",
                                action="external",
                                kinds=("execparam",),
-                               description="""Do we continue to replay and loop over the input file when we are done or not"""
+                               description="""Continue to replay and loop over the input file when we are done or not"""
                                )
         blocking = simple_property(id_="blocking",
                                    type_="boolean",
@@ -207,6 +227,6 @@ class DataReader_base(CF__POA.Resource, Resource):
                                    mode="readwrite",
                                    action="external",
                                    kinds=("configure",),
-                                   description="""Set the blocking flag in the sri"""
+                                   description="""Set the blocking flag in the bulkio sri.  If this is not set to true you risk packet drops if processing can't keep up with data playback rate."""
                                    )
 

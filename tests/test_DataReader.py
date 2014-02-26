@@ -52,7 +52,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         
         if SpeedFactor!=None:
             self.SpeedFactor = SpeedFactor
-            myProps.append(CF.DataType(id='SpeedFactor', value=CORBA.Any(CORBA.TC_long, SpeedFactor)))
+            myProps.append(CF.DataType(id='SpeedFactor', value=CORBA.Any(CORBA.TC_float, SpeedFactor)))
 
         if Play!=None:
             self.Play = Play
@@ -71,10 +71,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
             #configure it
             self.comp.configure(myProps)
 
-    def setUp(self):
+    def setUpTest(self):
         """Set up the unit test - this is run before every method that starts with test
         """
-        ossie.utils.testing.ScaComponentTestCase.setUp(self)
         self.sink = sb.DataSink()
         
         #setup my components
@@ -104,6 +103,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         # Launch the component with the default execparams
         execparams = self.getPropertySet(kinds=("execparam",), modes=("readwrite", "writeonly"), includeNil=False)
         execparams = dict([(x.id, any.from_any(x.value)) for x in execparams])
+        execparams['Loop']= self.Loop
         self.launch(execparams, initialize=True)
         
         #######################################################################
@@ -148,14 +148,16 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
 
 
     def testIt(self):
+        self.Loop=False
+        self.setUpTest()
         fileName= "/tmp/DataReaderTest.file" 
         f = file(fileName,'wb')
         data = [float(x) for x in range(100)]
         s = struct.pack("%sf"%len(data), *data)
         f.write(s)
         f.close()
-        self.setProps(SampleRate=1e6,StreamID="tmpstream",FrontendRF = 1234567, InputFile=fileName, SpeedFactor=1, Play=True,ydelta = .001, subsize=200)
-        out = self.main()
+        self.setProps(SampleRate=1e6,StreamID="tmpstream",FrontendRF = 1234567, InputFile=fileName, SpeedFactor=1.0, Play=True,ydelta = .001, subsize=200)
+        out, endTime = self.main()
         self.assertEqual(data, out[:len(data)])
         sri = self.sink.sri()
         self.assertEqual(sri.streamID,self.StreamID)
@@ -169,21 +171,62 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
                 found=True
         self.assertTrue(found)
         print "IT PASSED"
+
+    def testSpeedFactorOne(self):
+
+        self.speedFactorTest(1.0)
+
+    def testSpeedFactorPointOne(self):
+        self.speedFactorTest(.1)
+
+    def testSpeedFactorTen(self):
+        self.speedFactorTest(10.0)
+
+    def speedFactorTest(self, speedFactor):
+        self.Loop=True
+        self.setUpTest()
+        fileName= "/tmp/DataReaderTest.file" 
+        f = file(fileName,'wb')
+        data = [float(x) for x in range(32*1024)]
+        s = struct.pack("%sf"%len(data), *data)
+        f.write(s)
+        f.close()
+        dataAmmount = 3e5
+        #let the test run for a bit to get more accurate sped factor measurements
+        testTime = 3.0
+        playRate=  dataAmmount / testTime
+        fs = playRate / speedFactor
+        self.comp.complex=False
+        self.setProps(SampleRate=fs, InputFile=fileName, SpeedFactor=speedFactor, Play=True)
+        out, duration = self.main(dataAmmount)
+        self.Play = False
+        outputRate = len(out)/duration
+        measuredSpeedFactor = outputRate/fs
+        self.assertTrue(abs(measuredSpeedFactor-speedFactor)/ speedFactor <.1)
     
-    def main(self):
+    def main(self, maxSize=None):
         """The main engine for all the test cases - configure the equation, push data, and get output
            As applicable
         """
         #data processing is asynchronos - so wait until the data is all processed
         count=0
         output=[]
+        startTime = endTime = time.time()
         while True:
-            output.extend(self.sink.getData())
-            if count==40:
-                break
-            time.sleep(.01)
-            count+=1   
-        return output
+            data = self.sink.getData()
+            if data:
+                output.extend(data)
+                count=0
+                endTime = time.time()
+                if len(output) > maxSize:
+                    break
+            else:
+                time.sleep(.01)
+                count+=1 
+            if count==200:
+                print "timed out"
+                break  
+        return output, endTime-startTime
 
     
 if __name__ == "__main__":

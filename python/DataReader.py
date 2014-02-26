@@ -48,6 +48,7 @@ class DataReader_i(DataReader_base):
         self.inFd = None
         self.EOS = False
         self.EOF = True
+        self.nextPacket = 0
 
         # Initialize the pushPacket packet size. This is the number of floats in the 
         # packet constructed to send via pushPacket.
@@ -100,7 +101,7 @@ class DataReader_i(DataReader_base):
     def onconfigure_prop_InputFile(self, oldvalue, newvalue):
         self.InputFile = newvalue
         if not os.path.exists(self.InputFile):
-            self._log.error("InputFile path provided can not be accessed")
+            self._log.error("InputFile path %s provided can not be accessed" %self.InputFile)
 
     def onconfigure_prop_FrontendRF(self, oldvalue, newvalue):  
         self.FrontendRF = newvalue
@@ -177,18 +178,26 @@ class DataReader_i(DataReader_base):
 
         if signalData or self.EOS:
             now = time.time()
-            sleepFor = getattr(self, "nextPacket", now) - now
-            # With python, it's unreasonable to expect sleep to be more accurate than a ms
-            if sleepFor > 0.001:
-                time.sleep(sleepFor)
+            sleepTime = 2e-3
+            while self.nextPacket-now>0:
+                # With python, it's unreasonable to expect sleep to be more accurate than a ms
+                #use lots of little sleeps so we can check the stop_signal to break out of this loop if we need to
+                if self.process_thread==None:              
+                    break
+                time.sleep(sleepTime)
                 now = time.time()
             self.makeTimeStamp(now)
             # Perform remote pushPacket call
             self.outputPort.pushPacket(signalData, self.utcTime, self.EOS, self.StreamID)
             numSamples = len(signalData)
             if self.complex: numSamples /= 2
-            self.nextPacket = now + ((1.0/self.SampleRate)*numSamples)
-            
+            if self.SpeedFactor > 0:
+                playRate = self.SampleRate*self.SpeedFactor
+                playDuration = numSamples/playRate
+                if self.nextPacket !=0:
+                    self.nextPacket = 2* now - self.nextPacket + playDuration
+                else:
+                    self.nextPacket = now + playDuration
         if self.EOF:
             if self.inFd:
                 self.inFd.close()
