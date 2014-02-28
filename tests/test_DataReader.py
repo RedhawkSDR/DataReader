@@ -192,7 +192,7 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         f.write(s)
         f.close()
         dataAmmount = 3e5
-        #let the test run for a bit to get more accurate sped factor measurements
+        #let the test run for a bit to get more accurate speed factor measurements
         testTime = 3.0
         playRate=  dataAmmount / testTime
         fs = playRate / speedFactor
@@ -206,9 +206,9 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
     
     def main(self, maxSize=None):
         """The main engine for all the test cases - configure the equation, push data, and get output
-           As applicable
+           as applicable
         """
-        #data processing is asynchronos - so wait until the data is all processed
+        #data processing is asynchronous - so wait until the data is all processed
         count=0
         output=[]
         startTime = endTime = time.time()

@@ -159,7 +159,7 @@ class DataReader_base(CF__POA.Resource, Resource):
                                      mode="readwrite",
                                      action="external",
                                      kinds=("configure",),
-                                     description="""Radio frequency associated with ithis data.  This data is transmitted as a bulkio keyword  """
+                                     description="""Radio frequency associated with this data.  This data is transmitted as a bulkio keyword"""
                                      )
         InputFile = simple_property(id_="InputFile",
                                     type_="string",
@@ -167,7 +167,7 @@ class DataReader_base(CF__POA.Resource, Resource):
                                     mode="readwrite",
                                     action="external",
                                     kinds=("configure",),
-                                    description="""Path to the binary data to read out"""
+                                    description="""Path to the binary data file to read from"""
                                     )
         SpeedFactor = simple_property(id_="SpeedFactor",
                                       type_="float",
@@ -179,7 +179,7 @@ class DataReader_base(CF__POA.Resource, Resource):
                                       1.0:  real time.
                                       > 1.0:  faster than real time
                                       < 1.0: slower then real time
-                                      < 0: no sleeping - go as fast as possible  """
+                                      < 0: no sleeping - go as fast as possible"""
                                       )
         Play = simple_property(id_="Play",
                                type_="boolean",
@@ -187,7 +187,7 @@ class DataReader_base(CF__POA.Resource, Resource):
                                mode="readwrite",
                                action="external",
                                kinds=("configure",),
-                               description="""If play is false data playback is paused.  When play is set to true we resume playback form the same point in the file"""
+                               description="""If play is false data playback is paused.  When play is set to true we resume playback from the same point in the file"""
                                )
         ydelta = simple_property(id_="ydelta",
                                  type_="double",

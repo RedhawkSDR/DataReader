@@ -32,14 +32,14 @@ program.  If not, see http://www.gnu.org/licenses/.
     <action type="external"/>
   </simple>
   <simple id="FrontendRF" mode="readwrite" type="long">
-    <description>Radio frequency associated with ithis data.  This data is transmitted as a bulkio keyword  </description>
+    <description>Radio frequency associated with this data.  This data is transmitted as a bulkio keyword</description>
     <value>0</value>
     <units>Hz</units>
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>
   <simple id="InputFile" mode="readwrite" type="string">
-    <description>Path to the binary data to read out</description>
+    <description>Path to the binary data file to read from</description>
     <value>/the/path/to/my/file</value>
     <kind kindtype="configure"/>
     <action type="external"/>
@@ -49,13 +49,13 @@ program.  If not, see http://www.gnu.org/licenses/.
 1.0:  real time.  
 > 1.0:  faster than real time
 &lt; 1.0: slower then real time
-&lt; 0: no sleeping - go as fast as possible  </description>
+&lt; 0: no sleeping - go as fast as possible</description>
     <value>1.0</value>
     <kind kindtype="configure"/>
     <action type="external"/>
   </simple>
   <simple id="Play" mode="readwrite" type="boolean">
-    <description>If play is false data playback is paused.  When play is set to true we resume playback form the same point in the file</description>
+    <description>If play is false data playback is paused.  When play is set to true we resume playback from the same point in the file</description>
     <value>false</value>
     <kind kindtype="configure"/>
     <action type="external"/>
