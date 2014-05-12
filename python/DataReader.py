@@ -85,8 +85,8 @@ class DataReader_i(DataReader_base):
 
         # Assign the output port
         self.outputPort = self.port_dataFloatOut
-        self.outputPort.defaultStreamSRI = sri
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI = sri
+        self.outputPort.pushSRI(self.defaultStreamSRI)
         
                 
 
@@ -94,9 +94,8 @@ class DataReader_i(DataReader_base):
         self.StreamID = newvalue
         if not self.StreamID:
             self.StreamID = str(uuid.uuid4())
-        self.outputPort.defaultStreamSRI.streamID=self.StreamID
-        self.outputPort.sriDict[self.StreamID] = self.outputPort.defaultStreamSRI
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.streamID = self.StreamID
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_InputFile(self, oldvalue, newvalue):
         self.InputFile = newvalue
@@ -105,35 +104,35 @@ class DataReader_i(DataReader_base):
 
     def onconfigure_prop_FrontendRF(self, oldvalue, newvalue):  
         self.FrontendRF = newvalue
-        self.outputPort.defaultStreamSRI.keywords=[]
-        self.outputPort.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
-        self.outputPort.defaultStreamSRI.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
-        self.outputPort.refreshSRI = True        
+        self.defaultStreamSRI.keywords=[]
+        self.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
+        self.defaultStreamSRI.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_SampleRate(self, oldvalue, newvalue):
         self.SampleRate= newvalue
-        self.outputPort.defaultStreamSRI.xdelta = 1.0/self.SampleRate
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.xdelta = 1.0/self.SampleRate
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_ydelta(self, oldvalue, newvalue):
         self.ydelta= newvalue
-        self.outputPort.defaultStreamSRI.ydelta = self.ydelta
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.ydelta = self.ydelta
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_subsize(self, oldvalue, newvalue):
         self.subsize= newvalue
-        self.outputPort.defaultStreamSRI.subsize = self.subsize
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.subsize = self.subsize
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_complex(self, oldvalue, newvalue):
         self.complex = newvalue
-        self.outputPort.defaultStreamSRI.mode = int(self.complex)
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.mode = int(self.complex)
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def onconfigure_prop_blocking(self, oldvalue, newvalue):
         self.blocking = newvalue
-        self.outputPort.defaultStreamSRI.blocking = bool(newvalue)
-        self.outputPort.refreshSRI = True
+        self.defaultStreamSRI.blocking = bool(newvalue)
+        self.outputPort.pushSRI(self.defaultStreamSRI)
 
     def makeTimeStamp(self, curr_time):
         # Read current time for inclusion in packet
@@ -148,8 +147,8 @@ class DataReader_i(DataReader_base):
             return NOOP
         
         if (self.inFd==None):
-            self.inFd = open( self.InputFile, 'rb' )    
-            self.outputPort.refreshSRI = True
+            self.inFd = open( self.InputFile, 'rb' )
+            self.outputPort.pushSRI(self.defaultStreamSRI)
         if not self.inFd:
             return NOOP
             
