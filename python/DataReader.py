@@ -45,6 +45,7 @@ class DataReader_i(DataReader_base):
         DataReader_base.initialize(self)
         # Initialize file pointer and end of stream (EOS) and end of file (EOF) flags.
         # Note that EOS is never set to true in this program
+        self._log.warn('"DataReader" has been depreciated and will cease being distributed and supported in future releases.  Please replace instances of this component with "FileReader"')
         self.inFd = None
         self.EOS = False
         self.EOF = True
