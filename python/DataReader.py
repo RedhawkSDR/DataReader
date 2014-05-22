@@ -89,14 +89,14 @@ class DataReader_i(DataReader_base):
         self.defaultStreamSRI = sri
         self.outputPort.pushSRI(self.defaultStreamSRI)
         
-        self.addPropertyChangeListener("SampleRate",propChange_SampleRate)
-        self.addPropertyChangeListener("StreamID", propChange_StreamID)
-        self.addPropertyChangeListener("InputFile", propChange_InputFile)
-        self.addPropertyChangeListener("FrontendRF", propChange_FrontendRF)
-        self.addPropertyChangeListener("ydelta", propChange_ydelta)
-        self.addPropertyChangeListener("subsize",propChange_subsize)
-        self.addPropertyChangeListener("complex",propChange_complex)
-        self.addPropertyChangeListener("blocking",propChange_blocking)
+        self.addPropertyChangeListener("SampleRate",self.propChange_SampleRate)
+        self.addPropertyChangeListener("StreamID", self.propChange_StreamID)
+        self.addPropertyChangeListener("InputFile", self.propChange_InputFile)
+        self.addPropertyChangeListener("FrontendRF", self.propChange_FrontendRF)
+        self.addPropertyChangeListener("ydelta", self.propChange_ydelta)
+        self.addPropertyChangeListener("subsize",self.propChange_subsize)
+        self.addPropertyChangeListener("complex",self.propChange_complex)
+        self.addPropertyChangeListener("blocking",self.propChange_blocking)
                 
     def propChange_SampleRate(self, id, oldvalue, newvalue):
         #self.SampleRate= newvalue
