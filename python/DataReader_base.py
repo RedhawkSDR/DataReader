@@ -17,47 +17,21 @@
 # program.  If not, see http://www.gnu.org/licenses/.
 #
 #
-# AUTO-GENERATED CODE.  DO NOT MODIFY!
+# AUTO-GENERATED
 #
 # Source: DataReader.spd.xml
 from ossie.cf import CF, CF__POA
 from ossie.utils import uuid
 
 from ossie.resource import Resource
+from ossie.threadedcomponent import *
 from ossie.properties import simple_property
 
 import Queue, copy, time, threading
 from ossie.resource import usesport, providesport
 import bulkio
 
-NOOP = -1
-NORMAL = 0
-FINISH = 1
-class ProcessThread(threading.Thread):
-    def __init__(self, target, pause=0.0125):
-        threading.Thread.__init__(self)
-        self.setDaemon(True)
-        self.target = target
-        self.pause = pause
-        self.stop_signal = threading.Event()
-
-    def stop(self):
-        self.stop_signal.set()
-
-    def updatePause(self, pause):
-        self.pause = pause
-
-    def run(self):
-        state = NORMAL
-        while (state != FINISH) and (not self.stop_signal.isSet()):
-            state = self.target()
-            delay = 1e-6
-            if (state == NOOP):
-                # If there was no data to process sleep to avoid spinning
-                delay = self.pause
-            time.sleep(delay)
-
-class DataReader_base(CF__POA.Resource, Resource):
+class DataReader_base(CF__POA.Resource, Resource, ThreadedComponent):
         # These values can be altered in the __init__ of your derived class
 
         PAUSE = 0.0125 # The amount of time to sleep if process return NOOP
@@ -67,60 +41,30 @@ class DataReader_base(CF__POA.Resource, Resource):
         def __init__(self, identifier, execparams):
             loggerName = (execparams['NAME_BINDING'].replace('/', '.')).rsplit("_", 1)[0]
             Resource.__init__(self, identifier, execparams, loggerName=loggerName)
-            self.threadControlLock = threading.RLock()
-            self.process_thread = None
-            # self.auto_start is deprecated and is only kept for API compatability
+            ThreadedComponent.__init__(self)
+
+            # self.auto_start is deprecated and is only kept for API compatibility
             # with 1.7.X and 1.8.0 components.  This variable may be removed
             # in future releases
             self.auto_start = False
-
-        def initialize(self):
-            Resource.initialize(self)
-            
             # Instantiate the default implementations for all ports on this component
             self.port_dataFloatOut = bulkio.OutFloatPort("dataFloatOut")
 
         def start(self):
-            self.threadControlLock.acquire()
-            try:
-                Resource.start(self)
-                if self.process_thread == None:
-                    self.process_thread = ProcessThread(target=self.process, pause=self.PAUSE)
-                    self.process_thread.start()
-            finally:
-                self.threadControlLock.release()
-
-        def process(self):
-            """The process method should process a single "chunk" of data and then return.  This method will be called
-            from the processing thread again, and again, and again until it returns FINISH or stop() is called on the
-            component.  If no work is performed, then return NOOP"""
-            raise NotImplementedError
+            Resource.start(self)
+            ThreadedComponent.startThread(self, pause=self.PAUSE)
 
         def stop(self):
-            self.threadControlLock.acquire()
-            try:
-                process_thread = self.process_thread
-                self.process_thread = None
-
-                if process_thread != None:
-                    process_thread.stop()
-                    process_thread.join(self.TIMEOUT)
-                    if process_thread.isAlive():
-                        raise CF.Resource.StopError(CF.CF_NOTSET, "Processing thread did not die")
-                Resource.stop(self)
-            finally:
-                self.threadControlLock.release()
+            if not ThreadedComponent.stopThread(self, self.TIMEOUT):
+                raise CF.Resource.StopError(CF.CF_NOTSET, "Processing thread did not die")
+            Resource.stop(self)
 
         def releaseObject(self):
             try:
                 self.stop()
             except Exception:
                 self._log.exception("Error stopping")
-            self.threadControlLock.acquire()
-            try:
-                Resource.releaseObject(self)
-            finally:
-                self.threadControlLock.release()
+            Resource.releaseObject(self)
 
         ######################################################################
         # PORTS
@@ -143,32 +87,32 @@ class DataReader_base(CF__POA.Resource, Resource):
                                      mode="readwrite",
                                      action="external",
                                      kinds=("configure",),
-                                     description="""Sample rate for output data"""
-                                     )
+                                     description="""Sample rate for output data""")
+        
         StreamID = simple_property(id_="StreamID",
                                    type_="string",
                                    defvalue="dataPlayerStream",
                                    mode="readwrite",
                                    action="external",
                                    kinds=("configure",),
-                                   description="""bulkio streamID associated with this data"""
-                                   )
+                                   description="""bulkio streamID associated with this data""")
+        
         FrontendRF = simple_property(id_="FrontendRF",
                                      type_="long",
                                      defvalue=0,
                                      mode="readwrite",
                                      action="external",
                                      kinds=("configure",),
-                                     description="""Radio frequency associated with this data.  This data is transmitted as a bulkio keyword"""
-                                     )
+                                     description="""Radio frequency associated with this data.  This data is transmitted as a bulkio keyword""")
+        
         InputFile = simple_property(id_="InputFile",
                                     type_="string",
                                     defvalue="/the/path/to/my/file",
                                     mode="readwrite",
                                     action="external",
                                     kinds=("configure",),
-                                    description="""Path to the binary data file to read from"""
-                                    )
+                                    description="""Path to the binary data file to read from""")
+        
         SpeedFactor = simple_property(id_="SpeedFactor",
                                       type_="float",
                                       defvalue=1.0,
@@ -179,54 +123,54 @@ class DataReader_base(CF__POA.Resource, Resource):
                                       1.0:  real time.
                                       > 1.0:  faster than real time
                                       < 1.0: slower then real time
-                                      < 0: no sleeping - go as fast as possible"""
-                                      )
+                                      < 0: no sleeping - go as fast as possible""")
+        
         Play = simple_property(id_="Play",
                                type_="boolean",
                                defvalue=False,
                                mode="readwrite",
                                action="external",
                                kinds=("configure",),
-                               description="""If play is false data playback is paused.  When play is set to true we resume playback from the same point in the file"""
-                               )
+                               description="""If play is false data playback is paused.  When play is set to true we resume playback from the same point in the file""")
+        
         ydelta = simple_property(id_="ydelta",
                                  type_="double",
                                  defvalue=0.0,
                                  mode="readwrite",
                                  action="external",
                                  kinds=("configure",),
-                                 description="""The ydelta associated with the bulkio SRI.  This is only used for framed data (subsize > 0)"""
-                                 )
+                                 description="""The ydelta associated with the bulkio SRI.  This is only used for framed data (subsize > 0)""")
+        
         subsize = simple_property(id_="subsize",
                                   type_="long",
                                   defvalue=0,
                                   mode="readwrite",
                                   action="external",
                                   kinds=("configure",),
-                                  description="""The frame size if the data is framed.  This is used for the bulkio SRI."""
-                                  )
+                                  description="""The frame size if the data is framed.  This is used for the bulkio SRI.""")
+        
         complex = simple_property(id_="complex",
                                   type_="boolean",
                                   defvalue=True,
                                   mode="readwrite",
                                   action="external",
                                   kinds=("configure",),
-                                  description="""Flag to indicate data is complex.  If true, data values assumed to be alternating real and complex float values.  """
-                                  )
+                                  description="""Flag to indicate data is complex.  If true, data values assumed to be alternating real and complex float values.  """)
+        
         Loop = simple_property(id_="Loop",
                                type_="boolean",
                                defvalue=False,
                                mode="readwrite",
                                action="external",
                                kinds=("execparam",),
-                               description="""Continue to replay and loop over the input file when we are done or not"""
-                               )
+                               description="""Continue to replay and loop over the input file when we are done or not""")
+        
         blocking = simple_property(id_="blocking",
                                    type_="boolean",
                                    defvalue=True,
                                    mode="readwrite",
                                    action="external",
                                    kinds=("configure",),
-                                   description="""Set the blocking flag in the bulkio sri.  If this is not set to true you risk packet drops if processing can't keep up with data playback rate."""
-                                   )
+                                   description="""Set the blocking flag in the bulkio sri.  If this is not set to true you risk packet drops if processing can't keep up with data playback rate.""")
+        
 

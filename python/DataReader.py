@@ -89,49 +89,56 @@ class DataReader_i(DataReader_base):
         self.defaultStreamSRI = sri
         self.outputPort.pushSRI(self.defaultStreamSRI)
         
+        self.addPropertyChangeListener("SampleRate",propChange_SampleRate)
+        self.addPropertyChangeListener("StreamID", propChange_StreamID)
+        self.addPropertyChangeListener("InputFile", propChange_InputFile)
+        self.addPropertyChangeListener("FrontendRF", propChange_FrontendRF)
+        self.addPropertyChangeListener("ydelta", propChange_ydelta)
+        self.addPropertyChangeListener("subsize",propChange_subsize)
+        self.addPropertyChangeListener("complex",propChange_complex)
+        self.addPropertyChangeListener("blocking",propChange_blocking)
                 
-
-    def onconfigure_prop_StreamID(self, oldvalue, newvalue):
-        self.StreamID = newvalue
+    def propChange_SampleRate(self, id, oldvalue, newvalue):
+        #self.SampleRate= newvalue
+        self.defaultStreamSRI.xdelta = 1.0/self.SampleRate
+        self.outputPort.pushSRI(self.defaultStreamSRI)
+    
+    def propChange_StreamID(self, id, oldvalue, newvalue):
+        #self.StreamID = newvalue
         if not self.StreamID:
             self.StreamID = str(uuid.uuid4())
         self.defaultStreamSRI.streamID = self.StreamID
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
-    def onconfigure_prop_InputFile(self, oldvalue, newvalue):
-        self.InputFile = newvalue
+    def propChange_InputFile(self, id, oldvalue, newvalue):
+        #self.InputFile = newvalue
         if not os.path.exists(self.InputFile):
             self._log.error("InputFile path %s provided can not be accessed" %self.InputFile)
 
-    def onconfigure_prop_FrontendRF(self, oldvalue, newvalue):  
-        self.FrontendRF = newvalue
+    def propChange_FrontendRF(self, id, oldvalue, newvalue):  
+        #self.FrontendRF = newvalue
         self.defaultStreamSRI.keywords=[]
         self.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
         self.defaultStreamSRI.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
-    def onconfigure_prop_SampleRate(self, oldvalue, newvalue):
-        self.SampleRate= newvalue
-        self.defaultStreamSRI.xdelta = 1.0/self.SampleRate
-        self.outputPort.pushSRI(self.defaultStreamSRI)
-
-    def onconfigure_prop_ydelta(self, oldvalue, newvalue):
-        self.ydelta= newvalue
+    def propChange_ydelta(self, id, oldvalue, newvalue):
+        #self.ydelta= newvalue
         self.defaultStreamSRI.ydelta = self.ydelta
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
-    def onconfigure_prop_subsize(self, oldvalue, newvalue):
-        self.subsize= newvalue
+    def propChange_subsize(self, id, oldvalue, newvalue):
+        #self.subsize= newvalue
         self.defaultStreamSRI.subsize = self.subsize
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
-    def onconfigure_prop_complex(self, oldvalue, newvalue):
-        self.complex = newvalue
+    def propChange_complex(self, id, oldvalue, newvalue):
+        #self.complex = newvalue
         self.defaultStreamSRI.mode = int(self.complex)
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
-    def onconfigure_prop_blocking(self, oldvalue, newvalue):
-        self.blocking = newvalue
+    def propChange_blocking(self, id,  oldvalue, newvalue):
+        #self.blocking = newvalue
         self.defaultStreamSRI.blocking = bool(newvalue)
         self.outputPort.pushSRI(self.defaultStreamSRI)
 
