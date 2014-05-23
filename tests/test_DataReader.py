@@ -203,6 +203,8 @@ class ComponentTests(ossie.utils.testing.ScaComponentTestCase):
         outputRate = len(out)/duration
         measuredSpeedFactor = outputRate/fs
         self.assertTrue(abs(measuredSpeedFactor-speedFactor)/ speedFactor <.1)
+       
+        print "IT PASSED"
     
     def main(self, maxSize=None):
         """The main engine for all the test cases - configure the equation, push data, and get output
