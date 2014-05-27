@@ -87,7 +87,6 @@ class DataReader_i(DataReader_base):
         # Assign the output port
         self.outputPort = self.port_dataFloatOut
         self.defaultStreamSRI = sri
-        self.outputPort.pushSRI(self.defaultStreamSRI)
         
         self.addPropertyChangeListener("SampleRate",self.propChange_SampleRate)
         self.addPropertyChangeListener("StreamID", self.propChange_StreamID)
@@ -97,18 +96,21 @@ class DataReader_i(DataReader_base):
         self.addPropertyChangeListener("subsize",self.propChange_subsize)
         self.addPropertyChangeListener("complex",self.propChange_complex)
         self.addPropertyChangeListener("blocking",self.propChange_blocking)
+        
+        self._pushSri=True
                 
     def propChange_SampleRate(self, id, oldvalue, newvalue):
         #self.SampleRate= newvalue
         self.defaultStreamSRI.xdelta = 1.0/self.SampleRate
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
     
     def propChange_StreamID(self, id, oldvalue, newvalue):
         #self.StreamID = newvalue
+        #TO DO - should probably send an EOS for oldStreamID if necessary
         if not self.StreamID:
             self.StreamID = str(uuid.uuid4())
         self.defaultStreamSRI.streamID = self.StreamID
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def propChange_InputFile(self, id, oldvalue, newvalue):
         #self.InputFile = newvalue
@@ -120,27 +122,27 @@ class DataReader_i(DataReader_base):
         self.defaultStreamSRI.keywords=[]
         self.defaultStreamSRI.keywords.append(CF.DataType(id="COL_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
         self.defaultStreamSRI.keywords.append(CF.DataType(id="CHAN_RF",value=CORBA.Any(CORBA.TC_double,self.FrontendRF)))
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def propChange_ydelta(self, id, oldvalue, newvalue):
         #self.ydelta= newvalue
         self.defaultStreamSRI.ydelta = self.ydelta
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def propChange_subsize(self, id, oldvalue, newvalue):
         #self.subsize= newvalue
         self.defaultStreamSRI.subsize = self.subsize
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def propChange_complex(self, id, oldvalue, newvalue):
         #self.complex = newvalue
         self.defaultStreamSRI.mode = int(self.complex)
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def propChange_blocking(self, id,  oldvalue, newvalue):
         #self.blocking = newvalue
         self.defaultStreamSRI.blocking = bool(newvalue)
-        self.outputPort.pushSRI(self.defaultStreamSRI)
+        self._pushSri=True
 
     def makeTimeStamp(self, curr_time):
         # Read current time for inclusion in packet
@@ -195,7 +197,12 @@ class DataReader_i(DataReader_base):
                 now = time.time()
             self.makeTimeStamp(now)
             # Perform remote pushPacket call
-            self.outputPort.pushPacket(signalData, self.utcTime, self.EOS, self.StreamID)
+            #store streamID here to avoid race condition on callback for  streamID changing
+            streamID = self.defaultStreamSRI.streamID
+            if self._pushSri:
+                self.outputPort.pushSRI(self.defaultStreamSRI)
+                self._pushSri=False
+            self.outputPort.pushPacket(signalData, self.utcTime, self.EOS, streamID)
             numSamples = len(signalData)
             if self.complex: numSamples /= 2
             if self.SpeedFactor > 0:
